@@ -10,19 +10,24 @@
 (defn- do-parse-int [chars index cache]
   (if (seq? chars)
     (let [[h & t] chars
-          new-part (* (ascii->digit h) (Math/round (Math/pow 10 index)))]
+          new-part (* (ascii->digit h)
+                      (Math/round (Math/pow 10 index)))]
       (recur t
              (inc index)
              (cons new-part cache)))
     (reduce + cache)))
 
 (defn parse-int [s]
-  (-> s
-      seq
-      reverse
-      (do-parse-int 0 [])))
+  (if (empty? s)
+    (throw (ex-info "failure: empty." {:input s}))
+    (-> s
+        seq
+        reverse
+        (do-parse-int 0 []))))
 
 (defn parse-float [s]
-  (if-let [[int dec] (str/split s #"\.")]
-    (+ (parse-int int)
-       (* (parse-int (or dec "0")) (Math/pow 10 (- (count dec)))))))
+  (if (empty? s)
+    (throw (ex-info "failure: empty." {:input s}))
+    (let [[int dec] (str/split s #"\.")]
+      (+ (parse-int int)
+         (* (parse-int (or dec "0")) (Math/pow 10 (- (count dec))))))))
